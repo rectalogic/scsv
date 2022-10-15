@@ -11,3 +11,4 @@ args = parser.parse_args()
 with open(args.file) as f:
     for row in parse(f):
         json.dump(row, sys.stdout, indent=4)
+        print()

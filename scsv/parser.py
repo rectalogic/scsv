@@ -12,7 +12,7 @@ if ta.TYPE_CHECKING:
 LISTKEY = re.compile(r"(\w+)\[(\d+)\]")
 
 
-def tree() -> defaultdict:
+def tree() -> dict:
     return defaultdict(tree)
 
 
@@ -50,7 +50,7 @@ def getitem(item: dict, key: str) -> dict:
 def parse(f: io.TextIOBase) -> ta.Generator[dict, None, None]:
     reader = csv.DictReader(f)
     for row in reader:
-        scsv: dict = tree()
+        scsv = tree()
         for keypath, value in row.items():
             keys = keypath.split(".")
             item = scsv
