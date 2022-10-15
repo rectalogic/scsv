@@ -1,11 +1,46 @@
-from collections import defaultdict
 import csv
-import sys
 import json
+import re
+import sys
+from collections import defaultdict
+
+LISTKEY = re.compile(r"(\w+)\[(\d+)\]")
+NOTSET = object()
 
 
 def tree():
     return defaultdict(tree)
+
+
+def parsekey(key):
+    m = LISTKEY.fullmatch(key)
+    if m:
+        return m.group(1), int(m.group(2))
+    else:
+        return key, None
+
+
+def ensurelist(lst, index, itemfunc):
+    lst.extend((itemfunc() for _ in range((index + 1) - len(lst))))
+
+
+def getdictitem(item, key):
+    return item[key]
+
+
+def getlistitem(item, key, index, itemfunc):
+    if key not in item:
+        item[key] = []
+    ensurelist(item[key], index, itemfunc)
+    return item[key][index]
+
+
+def getitem(item, key):
+    key, index = parsekey(key)
+    if index is not None:
+        return getlistitem(item, key, index, tree)
+    else:
+        return getdictitem(item, key)
 
 
 def parse(f):
@@ -13,11 +48,16 @@ def parse(f):
     for row in reader:
         scsv = tree()
         for keypath, value in row.items():
-            keys  = keypath.split(".")
+            keys = keypath.split(".")
             item = scsv
             for key in keys[:-1]:
-                item = item[key]
-            item[keys[-1]] = value
+                item = getitem(item, key)
+            key, index = parsekey(keys[-1])
+            if index is not None:
+                getlistitem(item, key, index, lambda: None)
+                item[key][index] = value
+            else:
+                item[key] = value
         yield scsv
 
 
