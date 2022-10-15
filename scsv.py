@@ -1,18 +1,21 @@
+from __future__ import annotations
+
 import csv
 import json
 import re
 import sys
+import typing as ta
 from collections import defaultdict
 
 LISTKEY = re.compile(r"(\w+)\[(\d+)\]")
 NOTSET = object()
 
 
-def tree():
+def tree() -> defaultdict:
     return defaultdict(tree)
 
 
-def parsekey(key):
+def parsekey(key: str) -> tuple[str, ta.Optional[int]]:
     m = LISTKEY.fullmatch(key)
     if m:
         return m.group(1), int(m.group(2))
@@ -20,22 +23,22 @@ def parsekey(key):
         return key, None
 
 
-def ensurelist(lst, index, itemfunc):
+def ensurelist(lst: list, index: int, itemfunc: ta.Callable[[], ta.Any]) -> None:
     lst.extend((itemfunc() for _ in range((index + 1) - len(lst))))
 
 
-def getdictitem(item, key):
+def getdictitem(item: dict, key: str) -> dict:
     return item[key]
 
 
-def getlistitem(item, key, index, itemfunc):
+def getlistitem(item: dict, key: str, index: int, itemfunc: ta.Callable[[], ta.Any]) -> ta.Any:
     if key not in item:
         item[key] = []
     ensurelist(item[key], index, itemfunc)
     return item[key][index]
 
 
-def getitem(item, key):
+def getitem(item: dict, key: str) -> dict:
     key, index = parsekey(key)
     if index is not None:
         return getlistitem(item, key, index, tree)
