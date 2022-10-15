@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import csv
-import json
 import re
-import sys
 import typing as ta
 from collections import defaultdict
 
+if ta.TYPE_CHECKING:
+    import io
+
+
 LISTKEY = re.compile(r"(\w+)\[(\d+)\]")
-NOTSET = object()
 
 
 def tree() -> defaultdict:
@@ -46,10 +47,10 @@ def getitem(item: dict, key: str) -> dict:
         return getdictitem(item, key)
 
 
-def parse(f):
+def parse(f: io.TextIOBase):
     reader = csv.DictReader(f)
     for row in reader:
-        scsv = tree()
+        scsv: dict = tree()
         for keypath, value in row.items():
             keys = keypath.split(".")
             item = scsv
@@ -62,9 +63,3 @@ def parse(f):
             else:
                 item[key] = value
         yield scsv
-
-
-if __name__ == "__main__":
-    with open(sys.argv[1]) as f:
-        for row in parse(f):
-            json.dump(row, sys.stdout, indent=4)
