@@ -47,7 +47,7 @@ def getitem(item: dict, key: str) -> dict:
         return getdictitem(item, key)
 
 
-def parse(f: io.TextIOBase):
+def parse(f: io.TextIOBase) -> ta.Generator[dict, None, None]:
     reader = csv.DictReader(f)
     for row in reader:
         scsv: dict = tree()
