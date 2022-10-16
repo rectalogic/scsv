@@ -3,7 +3,11 @@ Structured CSV
 
 Given this SCSV:
 
-https://github.com/rectalogic/scsv/blob/8116e4f360acb8b662310cae8b1638ca422ac653/test.csv
+```csv
+patient.name.given[0],patient.name.given[1],patient.name.family,patient.dob,iid,insurance[0].policy,insurance[1].policy,tags[|]
+rob,bob,halford,02/16/1993,cureatr,pol123,pol456,tag1|tag2|tag3
+joe,joseph,blow,01/13/1984,davita,pol-abc,pol-def,tag1
+```
 
 Generate this JSON:
 
