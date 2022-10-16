@@ -8,11 +8,14 @@ from collections import defaultdict
 if ta.TYPE_CHECKING:
     import io
 
+    Tree = dict[str, Item]
+    List = ta.Union[list[Tree], list[str]]
+    Item = ta.Union[str, Tree, List]
 
 LISTKEY = re.compile(r"(\w+)\[(\d+|.)\]")
 
 
-def tree() -> dict:
+def tree() -> Tree:
     return defaultdict(tree)
 
 
@@ -29,45 +32,53 @@ def parsekey(key: str) -> tuple[str, ta.Optional[ta.Union[str, int]]]:
         return key, None
 
 
-def ensurelist(lst: list, index: int, itemfunc: ta.Callable[[], ta.Any]) -> None:
+def ensurelist(lst: List, index: int, itemfunc: ta.Callable[[], ta.Any]) -> None:
     lst.extend((itemfunc() for _ in range((index + 1) - len(lst))))
 
 
-def getdictitem(item: dict, key: str) -> dict:
+def getdictitem(item: Tree, key: str) -> Item:
     return item[key]
 
 
-def getlistitem(item: dict, key: str, index: int, itemfunc: ta.Callable[[], ta.Any]) -> ta.Any:
+def getlist(item: Tree, key: str, index: int, itemfunc: ta.Callable[[], ta.Any]) -> List:
     if key not in item:
-        item[key] = []
-    ensurelist(item[key], index, itemfunc)
-    return item[key][index]
+        item[key] = ta.cast("List", [])
+    lst = item[key]
+    if not isinstance(lst, list):
+        raise ValueError(f"{key} is not a list")
+    ensurelist(lst, index, itemfunc)
+    return lst
 
 
-def getitem(item: dict, key: str) -> dict:
+def getlistitem(item: Tree, key: str, index: int, itemfunc: ta.Callable[[], ta.Any]) -> Item:
+    lst = getlist(item, key, index, itemfunc)
+    return lst[index]
+
+
+def getitem(item: Tree, key: str) -> Item:
     key, index = parsekey(key)
-    if index is not None:
+    if isinstance(index, int):
         return getlistitem(item, key, index, tree)
     else:
         return getdictitem(item, key)
 
 
-def parse(f: io.TextIOBase) -> ta.Generator[dict, None, None]:
+def parse(f: io.TextIOBase) -> ta.Generator[Tree, None, None]:
     reader = csv.DictReader(f)
     for row in reader:
         scsv = tree()
-        for keypath, value in row.items():
+        for keypath, value in ta.cast(dict[str, str], row).items():
             keys = keypath.split(".")
             item = scsv
             for key in keys[:-1]:
-                item = getitem(item, key)
+                item = ta.cast("Tree", getitem(item, key))
             key, index = parsekey(keys[-1])
-            if index is not None:
-                if isinstance(index, int):
-                    getlistitem(item, key, index, lambda: None)
-                    item[key][index] = value
-                elif isinstance(index, str):
-                    item[key] = value.split(index)
+
+            if isinstance(index, int):
+                lst = getlist(item, key, index, lambda: "")
+                lst[index] = value
+            elif isinstance(index, str):
+                item[key] = value.split(index)
             else:
                 item[key] = value
         yield scsv

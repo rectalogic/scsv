@@ -26,7 +26,7 @@ testdata = [
         "override.csv",
         [
             {"name": "one", "tags": ["a", "b", "X", "d"]},
-            {"name": "two", "tags": ["e", None, "Y"]},
+            {"name": "two", "tags": ["e", "", "Y"]},
             {"name": "three", "tags": ["h", "i", "Z"]},
         ],
     ),
