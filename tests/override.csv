@@ -1,0 +1,4 @@
+name,tags[|],tags[2]
+one,a|b|c|d,X
+two,e,Y
+three,h|i,Z

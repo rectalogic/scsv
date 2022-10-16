@@ -3,7 +3,7 @@ Structured CSV
 
 Given this SCSV:
 
-[test.csv](https://github.com/rectalogic/scsv/blob/develop/test.csv)
+[test.csv](https://github.com/rectalogic/scsv/blob/develop/tests/test.csv)
 
 Generate this JSON:
 
