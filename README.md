@@ -3,9 +3,15 @@ Structured CSV
 
 Given this SCSV:
 
-https://github.com/rectalogic/scsv/blob/aa5209348f59c51dde94c7d46e2892689b52172e/test.csv#L1-L3
+https://github.com/rectalogic/scsv/blob/develop/test.csv#L1-L3
 
 Generate this JSON:
+
+```sh-session
+$ bin/ensure-poetry
+$ bin/poetry install
+$ bin/poetry run python -m scsv test.csv
+```
 
 ```json
 {
@@ -27,6 +33,11 @@ Generate this JSON:
         {
             "policy": "pol456"
         }
+    ],
+    "tags": [
+        "tag1",
+        "tag2",
+        "tag3"
     ]
 }
 {
@@ -48,6 +59,10 @@ Generate this JSON:
         {
             "policy": "pol-def"
         }
+    ],
+    "tags": [
+        "tag1"
     ]
 }
+
 ```
