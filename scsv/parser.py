@@ -9,17 +9,22 @@ if ta.TYPE_CHECKING:
     import io
 
 
-LISTKEY = re.compile(r"(\w+)\[(\d+)\]")
+LISTKEY = re.compile(r"(\w+)\[(\d+|.)\]")
 
 
 def tree() -> dict:
     return defaultdict(tree)
 
 
-def parsekey(key: str) -> tuple[str, ta.Optional[int]]:
+def parsekey(key: str) -> tuple[str, ta.Optional[ta.Union[str, int]]]:
     m = LISTKEY.fullmatch(key)
     if m:
-        return m.group(1), int(m.group(2))
+        index = m.group(2)
+        try:
+            index = int(index)
+        except ValueError:
+            pass
+        return m.group(1), index
     else:
         return key, None
 
@@ -58,8 +63,11 @@ def parse(f: io.TextIOBase) -> ta.Generator[dict, None, None]:
                 item = getitem(item, key)
             key, index = parsekey(keys[-1])
             if index is not None:
-                getlistitem(item, key, index, lambda: None)
-                item[key][index] = value
+                if isinstance(index, int):
+                    getlistitem(item, key, index, lambda: None)
+                    item[key][index] = value
+                elif isinstance(index, str):
+                    item[key] = value.split(index)
             else:
                 item[key] = value
         yield scsv
