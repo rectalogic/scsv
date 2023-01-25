@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "scsv"
-version = "0.1.0"
+version = "0.1.1"
 description = "Structured CSV parser"
 authors = ["Andrew Wason <rectalogic@rectalogic.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"
