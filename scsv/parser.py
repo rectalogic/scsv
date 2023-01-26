@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import csv
+import io
 import re
 import typing as ta
 from collections import defaultdict
-import io
 
 if ta.TYPE_CHECKING:
     Tree: ta.TypeAlias = dict[str, TreeItem]
@@ -102,23 +102,27 @@ def neuter(d: Tree) -> Tree:
     return d
 
 
+def parse_scsv(row: dict[str, str]) -> SCSV:
+    scsv = tree()
+    for keypath, value in row.items():
+        keys = keypath.split(".")
+        item = scsv
+        for key in keys[:-1]:
+            item = get_nonleaf_item(item, key)
+        key, index = parsekey(keys[-1])
+
+        if isinstance(index, int):
+            lst = get_leaf_list(item, key, index)
+            lst[index] = value
+        elif isinstance(index, str):
+            item[key] = value.split(index)
+        else:
+            item[key] = value
+    # Disable defaultdict functionality
+    return neuter(scsv)
+
+
 def parse(f: io.TextIOBase) -> ta.Generator[SCSV, None, None]:
     reader = csv.DictReader(f)
     for row in reader:
-        scsv = tree()
-        for keypath, value in row.items():
-            keys = keypath.split(".")
-            item = scsv
-            for key in keys[:-1]:
-                item = get_nonleaf_item(item, key)
-            key, index = parsekey(keys[-1])
-
-            if isinstance(index, int):
-                lst = get_leaf_list(item, key, index)
-                lst[index] = value
-            elif isinstance(index, str):
-                item[key] = value.split(index)
-            else:
-                item[key] = value
-        # Disable defaultdict functionality
-        yield neuter(scsv)
+        yield parse_scsv(row)
